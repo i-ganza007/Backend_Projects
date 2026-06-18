@@ -1,7 +1,7 @@
 import express from 'express'
 import http from 'http'
-import user_router from './users_module'
-import sql from 'mssql'
+import user_router from './users_module/index.mjs'
+import mysql2 from 'mysql2'
 import { loadEnvFile } from 'process'
 
 
@@ -9,11 +9,13 @@ const app = express()
 const server = http.createServer(app)
 loadEnvFile()
 const config = {
+  host: process.env.MYSQL_HOST,
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
-  server: 'localhost',
   database: process.env.MYSQL_DATABASE,
 };
+
+export const db = mysql2.createPool(config).promise()
 
 
 
@@ -26,19 +28,13 @@ app.all('/',(req,res)=>{
 
 const startupFunc = async () => {
     try {
-        await sql.query(`
-            IF NOT EXISTS (
-                SELECT * FROM sys.tables
-                WHERE name = 'USERS'
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS USERS (
+                userId INT AUTO_INCREMENT PRIMARY KEY,
+                user_name VARCHAR(50) NOT NULL UNIQUE,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL
             )
-            BEGIN
-                CREATE TABLE USERS (
-                    userId INT IDENTITY(1,1) PRIMARY KEY,
-                    user_name VARCHAR(50) NOT NULL UNIQUE,
-                    email VARCHAR(255) NOT NULL UNIQUE,
-                    password VARCHAR(255) NOT NULL
-                )
-            END
         `)
         console.log('Users table ready')
     } catch (error) {
@@ -47,13 +43,12 @@ const startupFunc = async () => {
 }
 
 async function bootstrap() {
-    await sql.connect(config)
-
+    await db.query('SELECT 1')
     console.log('Connected to DB')
 
     await startupFunc()
 
-    server.listen(5000, () => {
+    server.listen(5000, '0.0.0.0',() => {
         console.log('Server running on port 5000')
     })
 }
