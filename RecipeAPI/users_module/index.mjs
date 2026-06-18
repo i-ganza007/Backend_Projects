@@ -5,6 +5,134 @@ import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
 import {node_mailer} from '../mailing_conf/index.mjs'
 
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     SignupRequest:
+ *       type: object
+ *       required:
+ *         - username
+ *         - email
+ *         - password
+ *       properties:
+ *         username:
+ *           type: string
+ *           example: johndoe
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: johndoe@example.com
+ *         password:
+ *           type: string
+ *           format: password
+ *           example: StrongPass123
+ *     LoginRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: johndoe@example.com
+ *         password:
+ *           type: string
+ *           format: password
+ *           example: StrongPass123
+ */
+
+/**
+ * @swagger
+ * /users/signup:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SignupRequest'
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: Created a user
+ *       409:
+ *         description: User with the email or username already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: User with the email or username Exists
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: Internal server error
+ */
+
+/**
+ * @swagger
+ * /users/login:
+ *   post:
+ *     summary: Log in an existing user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: User logged in successfully
+ *         headers:
+ *           Authorization:
+ *             schema:
+ *               type: string
+ *             description: Bearer JWT token
+ *             example: Bearer eyJhbGciOiJIUzI1NiIs...
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: User Logged In
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: Unauthorized User
+ */
+
+/**
+ * @swagger
+ * /users/test:
+ *   get:
+ *     summary: Health check endpoint
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Service is running
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: Working Fine
+ */
+
+
+
 const user_router = express.Router()
 
 user_router.post('/signup', async (req,res)=>{

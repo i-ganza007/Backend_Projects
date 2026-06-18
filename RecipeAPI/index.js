@@ -3,6 +3,8 @@ import http from 'http'
 import user_router from './users_module/index.mjs'
 import mysql2 from 'mysql2'
 import { loadEnvFile } from 'process'
+import swaggerUI from 'swagger-ui-express'
+import swaggerJSDOC from 'swagger-jsdoc'
 
 
 const app = express()
@@ -17,8 +19,28 @@ const config = {
 
 export const db = mysql2.createPool(config).promise()
 
+// Swagger setup
+const swaggerOptions = {
+    swaggerDefinition:{
+        openapi:'3.0.0',
+        info:{
+            title:"Recipe API",
+            version:'1.0.0',
+            description:'Recipe API docx and usage'
+        },
+        servers:[
+            {
+                url:'http://localhost:5000'
+            }
+        ],
+    },
+    apis:['./users_modules/*.mjs']
+}
+const swaggerDocs = swaggerJSDOC(swaggerOptions)
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs)  )
 
 
+app.use(express.json())
 app.use('/users',user_router)
 
 
